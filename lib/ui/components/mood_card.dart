@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
 import 'package:intl/intl.dart';
+import 'package:mood_jar_app/models/entities/mood_entry.dart';
 
 class MoodCard extends StatelessWidget {
   final MoodEntry mood;
-  final VoidCallback onAddNoteTap;
+  final Future<void> Function(BuildContext, MoodEntry) onUpdateTap;
   
-  const MoodCard({super.key, required this.mood, required this.onAddNoteTap});
+  const MoodCard({super.key, required this.mood, required this.onUpdateTap});
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +34,31 @@ class MoodCard extends StatelessWidget {
                     mood.type.label,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  if (mood.note != null && mood.note!.isNotEmpty)
-                    Text(
-                      mood.note!,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF2E2E2E)),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                        
-                    ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: (mood.reflection?.factors ?? []).map((factor) {
+                      return Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.black.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          factor,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                   Text(
                     DateFormat('HH:mm').format(mood.timestamp),
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF7A7A7A)),
@@ -52,17 +69,13 @@ class MoodCard extends StatelessWidget {
             ),
             const SizedBox(width: 12,),
             IconButton(
-              onPressed: onAddNoteTap,
+              onPressed: () => onUpdateTap(context, mood),
               icon: Icon(
-                mood.note != null && mood.note!.isNotEmpty
-                  ? Icons.edit_note
-                  : Icons.add_comment_outlined,
+                Icons.edit,
                 color: const Color(0xFFFAD089),
                 size: 28,
               ),
-              tooltip: mood.note != null && mood.note!.isNotEmpty 
-                  ? "Edit note" 
-                  : "Add note",
+              tooltip:  "Edit"
             )
           ],
         ),

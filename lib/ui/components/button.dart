@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 
 class Button extends StatelessWidget {
+  final Color? textColor;
+  final Color? backgroundColor;
   final String text;
-  final IconData? icon;
   final VoidCallback onPressed;
-  final Color backgroundColor;
-  final Color textColor;
 
   const Button({
     super.key,
-    required this.text,
-    required this.onPressed,
-    this.icon,
-    this.backgroundColor = const Color(0xFFFAD089),
     this.textColor = Colors.white,
+    this.backgroundColor = const Color(0xFFA78BFA),
+    required this.text,
+    required this.onPressed
   });
 
   @override
@@ -21,23 +19,18 @@ class Button extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        foregroundColor: textColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
+        elevation: 0,
+        padding: EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 12
         ),
-      ),
-      child: icon == null
-          ? Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(text, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(width: 8),
-                Icon(icon, size: 20),
-              ],
-            ),
+        backgroundColor: backgroundColor,
+        foregroundColor: textColor
+      ), 
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      )
     );
   }
 }

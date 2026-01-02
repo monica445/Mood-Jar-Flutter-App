@@ -1,86 +1,107 @@
 import 'package:flutter/material.dart';
 import 'package:mood_jar_app/models/entities/mood_entry.dart';
-import '../components/todays_moods.dart';
-import '../components/calendar_week.dart';
+import 'package:mood_jar_app/ui/components/empty_mood.dart';
+import 'package:mood_jar_app/ui/components/monthly_stats.dart';
+import 'package:mood_jar_app/ui/components/mood_jar.dart';
 
-class DashboardScreen extends StatelessWidget {
-  final List<MoodEntry> todayMoods;
+class Dashboard extends StatelessWidget {
   final VoidCallback onGoToAddMood;
-  final Function(MoodEntry) onUpdateMood; 
-  final Function(MoodEntry) onDismissMood;
+  final List<MoodEntry> todayMoods;
+  final List<MoodEntry> thisMonthMoods;
 
-  const DashboardScreen({
-    super.key,
-    required this.todayMoods,
-    required this.onGoToAddMood,
-    required this.onUpdateMood,
-    required this.onDismissMood
-  });
+  const Dashboard({super.key, required this.todayMoods, required this.onGoToAddMood, required this.thisMonthMoods});
+
+  String _getTimeBasedGreeting () {
+    final hour = DateTime.now().hour;
+
+    if(hour < 12) {
+      return "Good Morning";
+    } else if(hour < 17) {
+      return "Good Afternoon";
+    } else if(hour < 21) {
+      return "Good Evening";
+    } else {
+      return "Good Night";
+    }
+  }
+
+  String _getFormattedDate() {
+    final now = DateTime.now();
+
+    final daysOfWeek = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+      'Friday', 'Saturday', 'Sunday'
+    ];
+
+    final months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    final dayOfWeek = daysOfWeek[now.weekday - 1];
+    final day = now.day;
+    final month = months[now.month - 1];
+    final year = now.year;
+
+    return '$dayOfWeek, $day $month $year';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final DateTime today = DateTime.now();
-    final List<DateTime> weekDays = _getCurrentWeek();
-
-    return Scaffold(
-      backgroundColor: Color(0xFFF9FAFC),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Good Morning, Jennie',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              WeekDaysList(weekDays: weekDays, today: today),
-
-              const SizedBox(height: 32),
-
-              Text(
-                'Today, ${today.day} ${_getMonthName(today.month)}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Expanded(  
-                child: TodaysMoods(
-                  moods: todayMoods,
-                  onGoToAddMood: onGoToAddMood,
-                  onDismissMood: onDismissMood,
-                  onUpdateMood: onUpdateMood,
-                ),
-              ),
-            ],
+    return Padding(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "${_getTimeBasedGreeting()}, Jennie",
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
           ),
-        ),
+          Text(
+            _getFormattedDate(),
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 25),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  todayMoods.isEmpty
+                    ? EmptyTodayMoods(onGoToAddMood: onGoToAddMood)
+                    : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Your Feelings Today',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Center(
+                          child: MoodJar(todayMoods: todayMoods),
+                        )
+                      ],
+                    ),
+                  
+                  const SizedBox(height: 40),
+                  MonthlyStats(thisMonthMoods: thisMonthMoods),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  static List<DateTime> _getCurrentWeek() {
-    final now = DateTime.now();
-    final firstDay = now.subtract(Duration(days: now.weekday - 1));
-    return List.generate(7, (i) => firstDay.add(Duration(days: i)));
-  }
-
-  static String _getMonthName(int month) {
-    const months = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return months[month];
   }
 }
