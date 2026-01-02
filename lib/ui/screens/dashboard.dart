@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
 import 'package:mood_jar_app/ui/components/empty_mood.dart';
 import 'package:mood_jar_app/ui/components/monthly_stats.dart';
 import 'package:mood_jar_app/ui/components/mood_jar.dart';
+import '../../domain/entities/mood_entry.dart';
 
 class Dashboard extends StatelessWidget {
   final VoidCallback onGoToAddMood;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
-import 'package:mood_jar_app/models/enums/mood_type.dart';
+import '../../domain/entities/mood_entry.dart';
+import '../../domain/enums/mood_type.dart';
 class MonthlyStats extends StatelessWidget {
   final List<MoodEntry> thisMonthMoods;
 

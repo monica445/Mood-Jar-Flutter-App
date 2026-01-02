@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
-import 'package:mood_jar_app/models/entities/mood_reflection.dart';
-import 'package:mood_jar_app/models/enums/mood_type.dart';
+import '../../domain/entities/mood_entry.dart';
+import 'package:mood_jar_app/domain/entities/mood_reflection.dart';
 import 'package:mood_jar_app/ui/components/mood_buttons_list.dart';
 import 'package:mood_jar_app/ui/components/mood_card.dart';
 import 'package:mood_jar_app/ui/components/mood_jar.dart';
+import '../../domain/enums/mood_type.dart';
 import 'package:mood_jar_app/ui/components/mood_reflection_sheet.dart';
 
 class AddMood extends StatelessWidget {
@@ -46,7 +46,6 @@ class AddMood extends StatelessWidget {
       ),
     );
   }
-
 
   Future<void> onMoodTap(BuildContext context, Moodtype type) async{
     final result = await showModalBottomSheet<MoodReflection>(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
-
+import '../../domain/entities/mood_entry.dart';
 class MoodJar extends StatelessWidget {
   final List<MoodEntry> todayMoods;
   const MoodJar({super.key, required this.todayMoods});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
-import 'package:mood_jar_app/models/entities/mood_reflection.dart';
+import '../../domain/entities/mood_entry.dart';
+import 'package:mood_jar_app/domain/entities/mood_reflection.dart';
 import 'package:mood_jar_app/ui/components/button.dart';
 import 'package:mood_jar_app/ui/components/factor_category_list.dart';
 
