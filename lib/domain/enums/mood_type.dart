@@ -18,4 +18,5 @@ enum Moodtype {
     required this.icon,
     required this.color
   });
+
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
+import 'package:mood_jar_app/domain/entities/mood_entry.dart';
 import 'package:intl/intl.dart';
 
 class MoodCard extends StatelessWidget {

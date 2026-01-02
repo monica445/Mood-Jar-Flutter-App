@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../data/mockup_moods.dart';
-import '../../models/entities/mood_entry.dart';
+import '../../domain/entities/mood_entry.dart';
 import './dashboard.dart';
 import './add_mood.dart';
-import './calendar.dart';
+import 'calendar_view.dart';
 
 class MoodJarApp extends StatefulWidget {
   const MoodJarApp({super.key});
@@ -79,7 +79,7 @@ class _MoodJarAppState extends State<MoodJarApp> {
         onAddMood: onAddMood, 
         onDismissMood: onDismissMood,
         onUpdateMood: onUpdateMood),
-      Calendar(),
+      CalendarView(),
     ];
     return SafeArea(
       child: Scaffold(

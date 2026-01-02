@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
+import 'package:mood_jar_app/domain/entities/mood_entry.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mood_jar_app/ui/components/mood_card.dart';
 import '../components/button.dart';

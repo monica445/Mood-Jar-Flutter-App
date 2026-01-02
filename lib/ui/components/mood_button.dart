@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mood_jar_app/models/enums/mood_type.dart';
+import 'package:mood_jar_app/domain/enums/mood_type.dart';
 
 class MoodButton extends StatelessWidget {
   final Moodtype type;

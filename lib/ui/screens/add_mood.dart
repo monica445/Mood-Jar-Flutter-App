@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mood_jar_app/models/entities/mood_entry.dart';
-import 'package:mood_jar_app/models/enums/mood_type.dart';
+import 'package:mood_jar_app/domain/entities/mood_entry.dart';
+import 'package:mood_jar_app/domain/enums/mood_type.dart';
 import '../components/note_bottom_sheet.dart';
 import 'package:mood_jar_app/ui/components/mood_button.dart';
 import 'package:mood_jar_app/ui/components/mood_card.dart';

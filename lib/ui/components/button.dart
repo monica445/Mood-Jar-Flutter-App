@@ -6,19 +6,23 @@ class Button extends StatelessWidget {
   final VoidCallback onPressed;
   final Color backgroundColor;
   final Color textColor;
+  final int? width;
+  final int? height;
 
   const Button({
     super.key,
     required this.text,
     required this.onPressed,
     this.icon,
-    this.backgroundColor = const Color(0xFFFAD089),
+    this.backgroundColor = const Color.fromRGBO(167, 139, 250, 1),
     this.textColor = Colors.white,
+    this.width,
+    this.height
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    final button =  ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
@@ -39,5 +43,12 @@ class Button extends StatelessWidget {
               ],
             ),
     );
+
+    return SizedBox(
+      width: width?.toDouble(),
+      height: height?.toDouble(),
+      child: button,
+    );
+    
   }
 }

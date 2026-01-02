@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mood_jar_app/ui/screens/app.dart';
+import 'package:mood_jar_app/ui/screens/slash.dart';
 import './ui/screens/mood_jar_app.dart';
 
 void main() {
@@ -10,7 +12,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mood Jar',
-      home: MoodJarApp()
+      // home: MoodJarApp()
+      home: App(),
     );
   }
 }
