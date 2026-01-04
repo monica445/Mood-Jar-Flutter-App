@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mood_jar_app/domain/entities/user.dart';
-import 'package:mood_jar_app/domain/service/database_helper.dart';
 import 'package:mood_jar_app/ui/components/button.dart';
-import 'package:mood_jar_app/ui/screens/calendar_view.dart';
+import 'package:mood_jar_app/ui/screens/mood_jar.dart';
 
 class OnboardingDetail extends StatefulWidget {
   const OnboardingDetail({super.key});
@@ -23,14 +21,11 @@ class _OnboardingDetailState extends State<OnboardingDetail> {
             Container(
               padding: EdgeInsets.only(right: 15, top: 65, bottom: 20),
               alignment: Alignment.topRight,
-              child: InkWell(
-                onTap: () async {
-                  User guestUser = User(name: "Guest");
-                  await DatabaseHelper.addUser(guestUser);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingCompletetion()));
-                  print("The guest user is created");
-                },
-                child: Text("Skip", style: TextStyle(fontSize: 18))),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingCompletetion()));
+              },
+              child: Text("Skip", style: TextStyle(fontSize: 18)))
             ),
             Image(image: AssetImage("assets/icons/hello copy.png"), width: 170, height: 170,),
             SizedBox(height: 20,),
@@ -53,20 +48,10 @@ class _OnboardingDetailState extends State<OnboardingDetail> {
                   )
                 ),
                 onSubmitted: (value) async {
-                  setState(() {
-                    name = value;
-                  });
-                  print("${name}");
-
-                  final User newUser = User(name: name);
-
-                  await DatabaseHelper.addUser(newUser);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingCompletetion()));
-                  print("The user is created");
                 },
               ),
             )
-            
           ],
         ),
       ),
@@ -94,15 +79,16 @@ class OnboardingCompletetion extends StatelessWidget {
                 Padding(
                   padding:EdgeInsetsGeometry.only(bottom: 80),
                   child: Button(text: "Start", width: 350, onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarView()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => MoodJar()));
                   })
                 )
                 
               ],
-            ),
-          ),
-        ),
-      ),
+            )
+          )
+        )
+      )
     );
   }
 }
+

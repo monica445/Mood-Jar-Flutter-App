@@ -23,7 +23,7 @@ class _CalendarViewState extends State<CalendarView> {
   @override
   void initState() {
     super.initState();
-    seedInitialData().then((_) => loadMoodPerDays());
+    loadMoodPerDays();
   }
 
 
@@ -44,34 +44,6 @@ class _CalendarViewState extends State<CalendarView> {
     }
   }
 
-  Future<void> seedInitialData() async {
-    // Check if data already exists
-    final existingDays = await DatabaseHelper.getAllMoodPerDay();
-    if (existingDays.isNotEmpty) return; // prevent duplicates
-
-    // 1. Add MoodPerDay
-    final moodPerDay = await DatabaseHelper.addMoodPerDayWithId(
-      MoodPerDay(date: DateTime(2025, 12, 30)),
-    );
-
-    // 2. Add MoodEntries for that day
-    await DatabaseHelper.addNewMood(MoodEntry(
-      type: Moodtype.great,
-      timestamp: DateTime(2025, 12, 30, 9, 0),
-      note: "Morning walk",
-      moodPerDayId: moodPerDay.id,
-    ));
-
-    await DatabaseHelper.addNewMood(MoodEntry(
-      type: Moodtype.neutral,
-      timestamp: DateTime(2025, 12, 30, 21, 0),
-      note: "Felt tired",
-      moodPerDayId: moodPerDay.id,
-    ));
-
-    print("Seed data inserted into real DB!");
-    
-  }
 
 
   @override
@@ -79,6 +51,7 @@ class _CalendarViewState extends State<CalendarView> {
   return Scaffold(
     appBar: AppBar(
       title: Text("Montly Overview"),
+
     ),
     body: Padding(
       padding: const EdgeInsets.all(10.0),

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mood_jar_app/domain/entities/mood_entry.dart';
 import 'package:mood_jar_app/domain/entities/mood_per_day.dart';
 import 'package:mood_jar_app/domain/enums/mood_type.dart';
-import 'package:mood_jar_app/ui/components/mood_button.dart';
+import 'package:mood_jar_app/ui/components/button.dart';
 
 
 class MoodPerDayPage extends StatelessWidget {
@@ -73,10 +73,10 @@ class MoodPerDayPage extends StatelessWidget {
                     mood.type.label,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                   ),
-                  Text(
-                    mood.note ?? '',
-                    maxLines: 2,
-                  ),
+                  // Text(
+                  //   mood.note ?? '',
+                  //   maxLines: 2,
+                  // ),
                   Text(
                     DateFormat('h:mm a').format(mood.timestamp),
                     style: TextStyle(color: Colors.grey),

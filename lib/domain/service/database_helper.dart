@@ -1,90 +1,162 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 import 'package:mood_jar_app/domain/entities/mood_entry.dart';
 import 'package:mood_jar_app/domain/entities/mood_per_day.dart';
-import 'package:mood_jar_app/domain/entities/user.dart';
 import 'package:mood_jar_app/domain/enums/mood_type.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import '../../domain/entities/mood_reflection.dart';
 
 class DatabaseHelper {
   static const version = 2;
-  static const String databaseName = "MoodJar.db";
+  static const String databaseName = "MoodJar_V2.db";
   static Database? db;
 
-static Future<Database> getDb() async {
-  if (db != null && db!.isOpen) {
+  static Future<Database> getDb() async {
+    if (db != null) {
+      if (db!.isOpen) return db!;
+      db = null; 
+    }
+
+    final path = join(await getDatabasesPath(), databaseName);
+    db = await openDatabase(
+      path,
+      version: version,
+      onConfigure: (db) async {
+        await db.execute("PRAGMA foreign_keys = ON");
+      },
+      onCreate: (db, version) async {
+        await _createTables(db);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('''
+            CREATE TABLE MoodEntry_new (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              type TEXT,
+              timestamp TEXT,
+              reflection TEXT,  
+              moodPerDayId INTEGER,
+              FOREIGN KEY(moodPerDayId) REFERENCES MoodPerDay(id)
+            );
+          ''');
+
+          // Copy data from old table to new table
+          await db.execute('''
+            INSERT INTO MoodEntry_new (id, type, timestamp, reflection, moodPerDayId)
+            SELECT 
+              id, 
+              type, 
+              timestamp,
+              json_object('note', note, 'factors', json('[]')) as reflection,
+              moodPerDayId 
+            FROM MoodEntry
+          ''');
+
+          // Drop old table
+          await db.execute('DROP TABLE MoodEntry');
+
+          // Rename new table
+          await db.execute('ALTER TABLE MoodEntry_new RENAME TO MoodEntry');
+          
+        }
+      },
+    );
+
     return db!;
   }
-  
-  final path = join(await getDatabasesPath(), databaseName);
-  print('APP DB path: $path');
-  db = await openDatabase(
-    path,
-    version: version,
-    onConfigure: (db) async {
-      await db.execute("PRAGMA foreign_keys = ON");
-    },
-    onCreate: (db, version) async {
-      await db.execute('''CREATE TABLE User (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        joinedDate TEXT
-        );
-      ''');
 
-      await db.execute('''CREATE TABLE MoodPerDay (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT,
-        userId INTEGER,
-        FOREIGN KEY(userId) REFERENCES User(id)
-        );
-      ''');
+  static Future<void> _createTables(Database db) async {
 
-      await db.execute('''CREATE TABLE MoodEntry (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          type TEXT,
-          timestamp TEXT,
-          note TEXT,
-          moodPerDayId INTEGER,
-          FOREIGN KEY(moodPerDayId) REFERENCES MoodPerDay(id)
-        );
-      ''');
-    },
-    onUpgrade: (db, oldVersion, newVersion) async {
-      if (oldVersion < 2){
-        await db.execute("ALTER TABLE User add Column profile BLOB");
+    await db.execute('''CREATE TABLE MoodPerDay (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT,
+      userId INTEGER,
+      FOREIGN KEY(userId) REFERENCES User(id)
+      );
+    ''');
+
+    await db.execute('''CREATE TABLE MoodEntry (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT,
+      timestamp TEXT,
+      reflection TEXT, 
+      moodPerDayId INTEGER,
+      FOREIGN KEY(moodPerDayId) REFERENCES MoodPerDay(id)
+    );
+    ''');
+  }
+
+  // MoodEntry - add
+  static Future<int?> addMood(MoodEntry mood) async {
+    try{
+      final db = await getDb();
+    return await db.transaction((txn) async {
+      // 1. Normalize date
+      final dateOnly = DateTime(
+        mood.timestamp.year,
+        mood.timestamp.month,
+        mood.timestamp.day,
+      );
+      final dateString = DateFormat('yyyy-MM-dd').format(dateOnly);
+
+      // 2. Find or create MoodPerDay
+      final dayResult = await txn.query(
+        "MoodPerDay",
+        where: "date = ?",
+        whereArgs: [dateString],
+        limit: 1,
+      );
+
+      int moodPerDayId;
+      if (dayResult.isEmpty) {
+        moodPerDayId = await txn.insert("MoodPerDay", {'date': dateString});
+      } else {
+        moodPerDayId = dayResult.first['id'] as int;
       }
-    }
-  );
-  
-  return db!;
-}
 
-  // MoodEntry - add 
-  static Future<int> addNewMood(MoodEntry moodEntry) async {
-    final database = await getDb();
-    return await database.insert("MoodEntry", moodEntry.toMap());
+      // 3. Insert MoodEntry
+      final moodToInsert = mood.copyWith(moodPerDayId: moodPerDayId);
+
+      return await txn.insert("MoodEntry", moodToInsert.toMap());
+    });
+    }
+    catch(e){
+      print("The error is $e");
+    }
   }
 
   // MoodEntry - update
   static Future<int> updateMood(MoodEntry moodEntry) async {
     final database = await getDb();
-    return await database.update("MoodEntry", moodEntry.toMap(), where: 'id = ?', whereArgs: [moodEntry.id]);
+    return await database.update(
+      "MoodEntry",
+      moodEntry.toMap(),
+      where: 'id = ?',
+      whereArgs: [moodEntry.id],
+    );
   }
 
   // MoodEntry - delete
   static Future<int> deleteMood(MoodEntry moodEntry) async {
     final database = await getDb();
-    return await database.delete("MoodEntry", where: "id = ?", whereArgs: [moodEntry.id]);
+    return await database.delete(
+      "MoodEntry",
+      where: "id = ?",
+      whereArgs: [moodEntry.id],
+    );
   }
 
   // MoodEntry - read : getAllMoodEntry
   static Future<List<MoodEntry>> getAllMoodEntry() async {
     final database = await getDb();
-    final List<Map<String,dynamic>> maps = await database.query("MoodEntry");
-    return List.generate(maps.length, (index) => MoodEntry.fromMap(maps[index]));
+    final List<Map<String, dynamic>> maps = await database.query("MoodEntry");
+    return List.generate(
+      maps.length,
+      (index) => MoodEntry.fromMap(maps[index]),
+    );
   }
 
   // MoodPerDay - add
@@ -96,68 +168,60 @@ static Future<Database> getDb() async {
   // MoodPerDay - delete
   static Future<int> deleteMoodPerDay(MoodPerDay moodPerDay) async {
     final database = await getDb();
-    return await database.delete("MoodPerDay", where: "id = ?" , whereArgs: [moodPerDay.id]);
+    return await database.delete(
+      "MoodPerDay",
+      where: "id = ?",
+      whereArgs: [moodPerDay.id],
+    );
   }
 
   // MoodPerDay - getAllMoodPerDay
   static Future<List<MoodPerDay>> getAllMoodPerDay() async {
     final database = await getDb();
     final List<Map<String, dynamic>> maps = await database.query("MoodPerDay");
-    return List.generate(maps.length, (index) => MoodPerDay.fromMap(maps[index]));
+    return List.generate(
+      maps.length,
+      (index) => MoodPerDay.fromMap(maps[index]),
+    );
   }
 
   // MoodPerDay - get specific MoodPerDay
   static Future<MoodPerDay?> getMoodPerDay(DateTime date) async {
     final dateString = DateFormat('yyyy-MM-dd').format(date);
     final database = await getDb();
-    final results = await database.query("MoodPerDay", where: "date LIKE ?", whereArgs: ["$dateString%"]);
-    if(results.isNotEmpty){
+    final results = await database.query(
+      "MoodPerDay",
+      where: "date LIKE ?",
+      whereArgs: ["$dateString%"],
+    );
+    if (results.isNotEmpty) {
       return MoodPerDay.fromMap(results.first);
-    }
-    else{
+    } else {
       return null;
     }
-  }
-
-  // User - add
-  static Future<int> addUser(User user) async {
-    final database = await getDb();
-    return database.insert("User", user.toMap());
-  }
-
-  // User - getUser
-  static Future<User?> getUser() async {
-    final database = await getDb();
-    List<Map<String,dynamic>> maps = await database.query("User");
-    if(maps.isEmpty){
-      return null;
-    }
-    return User.fromMap(maps.first);  
-  }
-
-  static Future<void> updateUser(User newUser) async {
-    final database = await getDb();
-    await database.update("User", newUser.toMap(), where: 'id = ?', whereArgs: [newUser.id]);
   }
   
   static Future<MoodPerDay> addMoodPerDayWithId(MoodPerDay moodPerDay) async {
     final database = await getDb();
-    final id = await database.insert("MoodPerDay", {
-      'date': moodPerDay.date.toIso8601String(),
-    });
-    return MoodPerDay(id: id, date: moodPerDay.date); // id is assigned once
+
+    final dateString = DateFormat('yyyy-MM-dd').format(moodPerDay.date);
+
+    final id = await database.insert("MoodPerDay", {'date': dateString});
+
+    return MoodPerDay(id: id, date: DateTime.parse(dateString));
   }
 
   static Future<List<MoodPerDay>> getMoodPerDayWithMoods() async {
     final database = await getDb();
     final results = await database.rawQuery('''
       SELECT
-        MoodPerDay.id AS moodPerDayId,
+        MoodPerDay.id AS dayId,
         MoodPerDay.date AS moodDate,
         MoodEntry.id AS moodEntryId,
         MoodEntry.type,
         MoodEntry.timestamp,
-        MoodEntry.note
+        MoodEntry.reflection,
+        MoodEntry.moodPerDayId AS entryDayId
       FROM MoodPerDay
       LEFT JOIN MoodEntry
         ON MoodEntry.moodPerDayId = MoodPerDay.id
@@ -166,23 +230,39 @@ static Future<Database> getDb() async {
 
     final Map<int, MoodPerDay> grouped = {};
 
-    for(final row in results){
-      final int dayId = row["moodPerDayId"] as int;
-      grouped.putIfAbsent(dayId, (){
+    for (final row in results) {
+      final int dayId = row["dayId"] as int;
+      grouped.putIfAbsent(dayId, () {
         return MoodPerDay(
           id: dayId,
-          date: DateTime.parse(row["moodDate"] as String));
+          date: DateTime.parse(row["moodDate"] as String),
+        );
       });
-      if(row['moodEntryId'] != null){
+
+      if (row['moodEntryId'] != null) {
+        // Parse reflection from JSON string
+        MoodReflection? reflection;
+        if (row['reflection'] != null) {
+          try {
+            final reflectionMap = jsonDecode(row['reflection'] as String);
+            reflection = MoodReflection.fromMap(
+              Map<String, dynamic>.from(reflectionMap),
+            );
+          } catch (e) {
+            print("Error parsing reflection: $e");
+          }
+        }
+
         grouped[dayId]!.addMood(
           MoodEntry(
             id: row['moodEntryId'] as int,
             type: Moodtype.values.firstWhere(
-              (e) => e.name.toLowerCase() == (row['type'] as String).toLowerCase(),
+              (e) =>
+                  e.name.toLowerCase() == (row['type'] as String).toLowerCase(),
             ),
             timestamp: DateTime.parse(row['timestamp'] as String),
-            note: row['note'] as String?,
-            moodPerDayId: dayId,
+            reflection: reflection,
+            moodPerDayId: row['entryDayId'] as int?,
           ),
         );
       }
@@ -193,7 +273,7 @@ static Future<Database> getDb() async {
   static Future<void> closeDb() async {
     if (db != null && db!.isOpen) {
       await db!.close();
-      db = null; 
+      db = null;
       print("The database is closed");
     }
   }
@@ -203,13 +283,73 @@ static Future<Database> getDb() async {
     await database.delete("MoodEntry");
     await database.delete("MoodPerDay");
     await database.delete("User");
-    
-    
   }
 
   static Future<void> printDbPath() async {
     final dbPath = await getDatabasesPath();
     print(dbPath);
   }
-  
+
+  static Future<List<MoodEntry>> getTodayMoods() async {
+    final db = await getDb();
+    final today = DateTime.now();
+
+    // Normalize date to YYYY-MM-DD
+    final dateString = DateFormat('yyyy-MM-dd').format(today);
+
+    // Get MoodPerDay row for today
+    final dayResult = await db.query(
+      'MoodPerDay',
+      where: 'date = ?',
+      whereArgs: [dateString],
+      limit: 1,
+    );
+
+    if (dayResult.isEmpty) return [];
+
+    final moodPerDayId = dayResult.first['id'] as int;
+
+    // Get all moods for that day
+    final moodMaps = await db.query(
+      'MoodEntry',
+      where: 'moodPerDayId = ?',
+      whereArgs: [moodPerDayId],
+    );
+
+    return moodMaps.map((e) => MoodEntry.fromMap(e)).toList();
+  }
+
+  static Future<List<MoodEntry>> getThisMonthMoods() async {
+    final db = await getDb();
+    final now = DateTime.now();
+
+    // Start and end of month
+    final startMonth = DateTime(now.year, now.month, 1);
+    final endMonth = DateTime(now.year, now.month + 1, 1);
+
+    final startString = DateFormat('yyyy-MM-dd').format(startMonth);
+    final endString = DateFormat('yyyy-MM-dd').format(endMonth);
+
+    // Get all MoodPerDay rows in this month
+    final dayResults = await db.query(
+      'MoodPerDay',
+      where: 'date >= ? AND date < ?',
+      whereArgs: [startString, endString],
+    );
+
+    if (dayResults.isEmpty) return [];
+
+    // Collect all mood IDs from MoodPerDay rows
+    final moodPerDayIds = dayResults.map((e) => e['id'] as int).toList();
+
+    // Query all moods linked to these days
+    final moodMaps = await db.query(
+      'MoodEntry',
+      where:
+          'moodPerDayId IN (${List.filled(moodPerDayIds.length, '?').join(',')})',
+      whereArgs: moodPerDayIds,
+    );
+
+    return moodMaps.map((e) => MoodEntry.fromMap(e)).toList();
+  }
 }
