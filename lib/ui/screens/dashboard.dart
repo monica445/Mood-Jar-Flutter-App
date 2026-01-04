@@ -9,7 +9,12 @@ class Dashboard extends StatelessWidget {
   final List<MoodEntry> todayMoods;
   final List<MoodEntry> thisMonthMoods;
 
-  const Dashboard({super.key, required this.todayMoods, required this.onGoToAddMood, required this.thisMonthMoods});
+  const Dashboard({
+    super.key, 
+    required this.todayMoods, 
+    required this.onGoToAddMood, 
+    required this.thisMonthMoods
+  });
 
   String _getTimeBasedGreeting () {
     final hour = DateTime.now().hour;
@@ -89,7 +94,7 @@ class Dashboard extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         Center(
-                          child: MoodJar(todayMoods: todayMoods),
+                          child: MoodJar(todayMoods: todayMoods, onGoToAddMood: onGoToAddMood,),
                         )
                       ],
                     ),

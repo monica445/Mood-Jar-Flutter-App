@@ -16,8 +16,16 @@ class _SlashState extends State<Slash> {
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 5), (){
-      Navigator.of(context).pushReplacement(AnimationUtil.createRightToLeftRoute(Onboarding()));
+    Timer(const Duration(seconds: 3), () {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 250),
+          pageBuilder: (_, __, ___) => const Onboarding(),
+          transitionsBuilder: (_, animation, __, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      );
     });
   }
 
@@ -28,13 +36,19 @@ class _SlashState extends State<Slash> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image(image: AssetImage('assets/images/mood-jar.png'), width: 150, height: 150,),
-            Text("Mood Jar", style: 
-              TextStyle(
+            Image(
+              image: AssetImage('assets/images/mood-jar.png'),
+              width: 150,
+              height: 150,
+            ),
+            Text(
+              "Mood Jar",
+              style: TextStyle(
                 color: Color.fromRGBO(167, 139, 250, 1),
                 fontWeight: FontWeight.w500,
                 fontSize: 23,
-                )),
+              ),
+            ),
           ],
         ),
       ),

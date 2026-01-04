@@ -1,5 +1,4 @@
 import 'package:mood_jar_app/domain/entities/mood_entry.dart';
-import 'package:mood_jar_app/domain/entities/mood_per_day.dart';
 import 'package:mood_jar_app/domain/entities/statistic.dart';
 
 class User {

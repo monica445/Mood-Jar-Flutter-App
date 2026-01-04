@@ -14,7 +14,7 @@ class Button extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.icon,
-    this.backgroundColor = const Color.fromRGBO(167, 139, 250, 1),
+    this.backgroundColor = const Color(0xFFA78BFA),
     this.textColor = Colors.white,
     this.width,
     this.height
@@ -28,7 +28,7 @@ class Button extends StatelessWidget {
         elevation: 0,
         padding: EdgeInsets.symmetric(
           horizontal: 24,
-          vertical: 12
+          vertical: 14
         ),
         backgroundColor: backgroundColor,
         foregroundColor: textColor

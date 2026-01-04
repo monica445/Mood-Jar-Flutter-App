@@ -1,13 +1,12 @@
-import 'package:mood_jar_app/data/mockup_moods.dart';
 import 'package:mood_jar_app/domain/entities/mood_entry.dart';
 import 'package:mood_jar_app/domain/enums/mood_type.dart';
 
 class MoodPerDay {
   final int? id;
   final DateTime date;
-  List<MoodEntry> moods = [];
+  List<MoodEntry> moods;
 
-  MoodPerDay({this.id, required this.date});
+  MoodPerDay({this.id, required this.date, this.moods = const []});
 
   MoodPerDay copyWith({DateTime? date}){
   return MoodPerDay(

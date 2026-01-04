@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mood_jar_app/domain/service/database_helper.dart';
 import 'package:mood_jar_app/ui/screens/add_mood.dart';
 import 'package:mood_jar_app/ui/screens/dashboard.dart';
 import '../../domain/entities/mood_entry.dart';
@@ -11,62 +12,71 @@ class MoodJarApp extends StatefulWidget {
   State<MoodJarApp> createState() => _MoodJarAppState();
 }
 
-enum BottomTab {dashboard, addMood, calendar}
+enum BottomTab { dashboard, addMood, calendar }
 
 class _MoodJarAppState extends State<MoodJarApp> {
-  late List<MoodEntry> _allMoods;
+  late List<MoodEntry> _todayMoods = [];
+  late List<MoodEntry> _thisMonthMoods = [];
   BottomTab currentTab = BottomTab.dashboard;
 
   @override
   void initState() {
     super.initState();
-    _allMoods = [];
+    _loadMoods();
   }
 
-  void onAddMood (MoodEntry mood) {
+  Future<void> _loadMoods() async {
+
+    final todayMoods = await DatabaseHelper.getTodayMoods();
+    final monthMoods = await DatabaseHelper.getThisMonthMoods();
+
     setState(() {
-      _allMoods.add(mood);
+      _todayMoods = todayMoods;
+      _thisMonthMoods = monthMoods;
     });
   }
 
-  void onGoToAddMood () {
+  Future<void> onAddMood(MoodEntry newMood) async {
+    final newId = await DatabaseHelper.addMood(newMood); 
+
+    final moodWithId = newMood.copyWith(id: newId);
+
+    setState(() {
+      _todayMoods.add(moodWithId);
+      _thisMonthMoods.add(moodWithId);
+    });
+  }
+
+  void onGoToAddMood() {
     setState(() {
       currentTab = BottomTab.addMood;
     });
   }
 
-  void onEditMood(MoodEntry updatedMood) {
+  void onEditMood(MoodEntry updatedMood) async {
+    if (updatedMood.id == null) return;
+
+    await DatabaseHelper.updateMood(updatedMood);
+
     setState(() {
-      final index = _allMoods.indexWhere((mood) => mood.id == updatedMood.id);
-        if (index != -1) {
-        _allMoods[index] = updatedMood;
-      }
+      _todayMoods = _todayMoods
+          .map((m) => m.id == updatedMood.id ? updatedMood : m)
+          .toList();
+      _thisMonthMoods = _thisMonthMoods
+          .map((m) => m.id == updatedMood.id ? updatedMood : m)
+          .toList();
     });
   }
 
-  void onRemoveMood(MoodEntry mood) {
+  void onRemoveMood(MoodEntry mood) async {
+    if (mood.id == null) return;
+
+    await DatabaseHelper.deleteMood(mood);
+
     setState(() {
-      _allMoods.removeWhere((m) => m.id == mood.id);
+      _todayMoods.removeWhere((m) => m.id == mood.id);
+      _thisMonthMoods.removeWhere((m) => m.id == mood.id);
     });
-  }
-
-  List<MoodEntry> getTodayMoods(){
-    final now = DateTime.now();
-
-    return _allMoods.where((mood) => 
-      mood.timestamp.year == now.year &&
-      mood.timestamp.month == now.month &&
-      mood.timestamp.day == now.day
-    ).toList();
-  }
-
-  List<MoodEntry> getThisMonthMoods(){
-    final now = DateTime.now();
-
-    return _allMoods.where((mood) => 
-      mood.timestamp.year == now.year &&
-      mood.timestamp.month == now.month 
-    ).toList();
   }
 
   @override
@@ -75,23 +85,22 @@ class _MoodJarAppState extends State<MoodJarApp> {
       debugShowCheckedModeBanner: false,
       home: SafeArea(
         child: Scaffold(
-          
           body: IndexedStack(
-            
             index: currentTab.index,
             children: [
               Dashboard(
-                todayMoods: getTodayMoods(), 
+                todayMoods: _todayMoods,
                 onGoToAddMood: onGoToAddMood,
-                thisMonthMoods: getThisMonthMoods(),
+                thisMonthMoods: _thisMonthMoods
               ),
               AddMood(
-                todayMoods: getTodayMoods(), 
-                onUpdateTap: onEditMood,
+                todayMoods: _todayMoods,
+                onEditMood: onEditMood,
                 onRemoveMood: onRemoveMood,
                 onAddMood: onAddMood,
+                onGoToAddMood: onGoToAddMood,
               ),
-              CalendarView()
+              CalendarView(),
             ],
           ),
           bottomNavigationBar: BottomAppBar(
@@ -127,13 +136,15 @@ class _MoodJarAppState extends State<MoodJarApp> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
                           color: isActive
-                              ? const Color(0xFFA78BFA) 
+                              ? const Color(0xFFA78BFA)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Icon(
                           icon,
-                          color: isActive ? Colors.white : const Color.fromARGB(255, 132, 130, 130),
+                          color: isActive
+                              ? Colors.white
+                              : const Color.fromARGB(255, 132, 130, 130),
                           size: 30,
                         ),
                       ),
@@ -143,9 +154,8 @@ class _MoodJarAppState extends State<MoodJarApp> {
               ),
             ),
           ),
-
-        )
-      ) 
+        ),
+      ),
     );
   }
 }

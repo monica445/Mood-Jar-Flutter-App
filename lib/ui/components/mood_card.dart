@@ -5,9 +5,9 @@ import 'package:intl/intl.dart';
 
 class MoodCard extends StatelessWidget {
   final MoodEntry mood;
-  final Future<void> Function(BuildContext, MoodEntry) onUpdateTap;
+  final VoidCallback onEditTap; 
   
-  const MoodCard({super.key, required this.mood, required this.onUpdateTap});
+  const MoodCard({super.key, required this.mood, required this.onEditTap});
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +69,7 @@ class MoodCard extends StatelessWidget {
             ),
             const SizedBox(width: 12,),
             IconButton(
-              onPressed: () => onUpdateTap(context, mood),
+              onPressed: onEditTap,
               icon: Icon(
                 Icons.edit,
                 color: const Color(0xFFFAD089),

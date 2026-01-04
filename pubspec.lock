@@ -89,7 +89,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
-<<<<<<< HEAD
   fixnum:
     dependency: transitive
     description:
@@ -106,8 +105,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.66.2"
-=======
->>>>>>> origin/first-commit-by-gek-heang
   flutter:
     dependency: "direct main"
     description: flutter
@@ -300,7 +297,7 @@ packages:
     source: hosted
     version: "2.5.6"
   sqflite_common_ffi:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: sqflite_common_ffi
       sha256: "9faa2fedc5385ef238ce772589f7718c24cdddd27419b609bb9c6f703ea27988"

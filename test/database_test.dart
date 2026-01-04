@@ -38,17 +38,15 @@ group('seed data for MoodJar', () {
     final day = await DatabaseHelper.getMoodPerDay(DateTime(2025, 12, 30));
     expect(day, isNotNull);
 
-    await DatabaseHelper.addNewMood(MoodEntry(
+    await DatabaseHelper.addMood(MoodEntry(
       type: Moodtype.great,
       timestamp: DateTime(2025, 12, 30, 9, 0),
-      //note: "Morning walk",
       moodPerDayId: day!.id!,
     ));
 
-    await DatabaseHelper.addNewMood(MoodEntry(
+    await DatabaseHelper.addMood(MoodEntry(
       type: Moodtype.neutral,
       timestamp: DateTime(2025, 12, 30, 21, 0),
-      //note: "Felt tired",
       moodPerDayId: day.id!,
     ));
 

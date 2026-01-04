@@ -1,7 +1,7 @@
-import 'package:mood_jar_app/domain/entities/mood_reflection.dart';
-import 'package:uuid/uuid.dart';
-import '../enums/mood_type.dart';
+import 'dart:convert';
 
+import 'package:mood_jar_app/domain/entities/mood_reflection.dart';
+import 'package:mood_jar_app/domain/enums/mood_type.dart'; // Add this import
 
 class MoodEntry {
   final int? id;
@@ -22,34 +22,61 @@ class MoodEntry {
     int? id,
     Moodtype? type,
     DateTime? time,
-    MoodReflection? reflection
+    MoodReflection? reflection,
+    int? moodPerDayId
   }) {
     return MoodEntry(
       id: id ?? this.id,
       type: type ?? this.type,
       timestamp: time ?? this.timestamp,
-      reflection: reflection ?? this.reflection
+      reflection: reflection ?? this.reflection,
+      moodPerDayId: moodPerDayId ?? this.moodPerDayId,
     );
   }
 
   factory MoodEntry.fromMap(Map<String, dynamic> mapData){
+    // Handle reflection from JSON string
+    MoodReflection? reflection;
+    if (mapData['reflection'] != null) {
+      try {
+        // If reflection is stored as a JSON string
+        if (mapData['reflection'] is String) {
+          final reflectionMap = jsonDecode(mapData['reflection'] as String);
+          reflection = MoodReflection.fromMap(Map<String, dynamic>.from(reflectionMap));
+        } 
+        // If reflection is already a Map (for backward compatibility)
+        else if (mapData['reflection'] is Map) {
+          reflection = MoodReflection.fromMap(Map<String, dynamic>.from(mapData['reflection']));
+        }
+      } catch (e) {
+        print("Error parsing reflection: $e");
+      }
+    }
+
     return MoodEntry(
-      id: mapData['id'],
-      type: Moodtype.values.firstWhere((mood) => mood.label == mapData['type']),
-      timestamp: DateTime.parse(mapData['timestamp']),
-      reflection: mapData['reflection'] != null
-          ? MoodReflection.fromMap(mapData['reflection'])
-          : null,
-      );
+      id: mapData['id'] as int?,
+      type: Moodtype.values.firstWhere(
+        (mood) => mood.name.toLowerCase() == (mapData['type'] as String).toLowerCase(),
+      ),
+      timestamp: DateTime.parse(mapData['timestamp'] as String),
+      reflection: reflection,
+      moodPerDayId: mapData['moodPerDayId'] as int?,
+    );
   }
 
   Map<String,dynamic> toMap(){
+    // Convert reflection to JSON string
+    String? reflectionJson;
+    if (reflection != null) {
+      reflectionJson = jsonEncode(reflection!.toMap());
+    }
+
     return{
-      'type' : type.label,
+      'id': id,
+      'type': type.name, 
       'timestamp': timestamp.toIso8601String(),
-      'reflection': reflection?.toMap(),
-      'moodPerDayId' : moodPerDayId,
+      'reflection': reflectionJson, // Store as JSON string
+      'moodPerDayId': moodPerDayId,
     };
   }
-  
 }
