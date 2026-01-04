@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mood_jar_app/domain/entities/user.dart';
+import 'package:mood_jar_app/domain/service/database_helper.dart';
 import 'package:mood_jar_app/ui/components/button.dart';
 import 'package:mood_jar_app/ui/screens/calendar_view.dart';
 
@@ -21,7 +23,14 @@ class _OnboardingDetailState extends State<OnboardingDetail> {
             Container(
               padding: EdgeInsets.only(right: 15, top: 65, bottom: 20),
               alignment: Alignment.topRight,
-              child: Text("Skip", style: TextStyle(fontSize: 18),),
+              child: InkWell(
+                onTap: () async {
+                  User guestUser = User(name: "Guest");
+                  await DatabaseHelper.addUser(guestUser);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingCompletetion()));
+                  print("The guest user is created");
+                },
+                child: Text("Skip", style: TextStyle(fontSize: 18))),
             ),
             Image(image: AssetImage("assets/icons/hello copy.png"), width: 170, height: 170,),
             SizedBox(height: 20,),
@@ -43,12 +52,17 @@ class _OnboardingDetailState extends State<OnboardingDetail> {
                     borderSide: BorderSide.none
                   )
                 ),
-                onSubmitted: (value){
+                onSubmitted: (value) async {
                   setState(() {
                     name = value;
                   });
                   print("${name}");
+
+                  final User newUser = User(name: name);
+
+                  await DatabaseHelper.addUser(newUser);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingCompletetion()));
+                  print("The user is created");
                 },
               ),
             )
@@ -66,24 +80,26 @@ class OnboardingCompletetion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 200),
-          child: Column(
-            children: [
-              Image(image: AssetImage("assets/icons/smile.png"), width: 170, height: 170,),
-              SizedBox(height: 30),
-              Text("All Set", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 30)),
-              Text("Ready when you are", style: TextStyle(fontSize: 15)),
-              Spacer(),
-              Padding(
-                padding:EdgeInsetsGeometry.only(bottom: 80),
-                child: Button(text: "Start", width: 350, onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarView()));
-                })
-              )
-              
-            ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 200),
+            child: Column(
+              children: [
+                Image(image: AssetImage("assets/icons/smile.png"), width: 170, height: 170,),
+                SizedBox(height: 30),
+                Text("All Set", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 30)),
+                Text("Ready when you are", style: TextStyle(fontSize: 15)),
+                SizedBox(height: 50),
+                Padding(
+                  padding:EdgeInsetsGeometry.only(bottom: 80),
+                  child: Button(text: "Start", width: 350, onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarView()));
+                  })
+                )
+                
+              ],
+            ),
           ),
         ),
       ),

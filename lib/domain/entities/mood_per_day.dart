@@ -43,11 +43,13 @@ class MoodPerDay {
 
 
   Moodtype? getAvgMoodScale() {
+    
     int totalMoodWeight = 0;
     double avgMoodWeight = 0;
 
     if(moods.isEmpty){
       return null;
+      
     }
     for(MoodEntry mood in moods){
       totalMoodWeight += mood.type.weight;
@@ -55,10 +57,10 @@ class MoodPerDay {
     avgMoodWeight = (totalMoodWeight / moods.length);
     
     Moodtype closest = Moodtype.values.first;
-    double minDiff = (closest.weight - avgMoodWeight);
+    double minDiff = (closest.weight - avgMoodWeight).abs();
 
     for( var mood in Moodtype.values){
-      double diff = (mood.weight - avgMoodWeight);
+      double diff = (mood.weight - avgMoodWeight).abs();
       if(diff < minDiff){
         minDiff = diff;
         closest = mood;

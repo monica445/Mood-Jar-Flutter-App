@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 class AnimationUtil {
-  static const int transitionSpeed = 500;
+  static const int transitionSpeed = 1000;
 
   static Route<T> createRightToLeftRoute<T>(widgetScreen){
     const begin = Offset(1, 0);

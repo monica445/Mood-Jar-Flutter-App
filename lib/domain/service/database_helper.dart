@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:mood_jar_app/domain/entities/mood_entry.dart';
 import 'package:mood_jar_app/domain/entities/mood_per_day.dart';
@@ -7,7 +9,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
-  static const version = 1;
+  static const version = 2;
   static const String databaseName = "MoodJar.db";
   static Database? db;
 
@@ -17,6 +19,7 @@ static Future<Database> getDb() async {
   }
   
   final path = join(await getDatabasesPath(), databaseName);
+  print('APP DB path: $path');
   db = await openDatabase(
     path,
     version: version,
@@ -49,6 +52,11 @@ static Future<Database> getDb() async {
         );
       ''');
     },
+    onUpgrade: (db, oldVersion, newVersion) async {
+      if (oldVersion < 2){
+        await db.execute("ALTER TABLE User add Column profile BLOB");
+      }
+    }
   );
   
   return db!;
@@ -126,13 +134,19 @@ static Future<Database> getDb() async {
     }
     return User.fromMap(maps.first);  
   }
+
+  static Future<void> updateUser(User newUser) async {
+    final database = await getDb();
+    await database.update("User", newUser.toMap(), where: 'id = ?', whereArgs: [newUser.id]);
+  }
+  
   static Future<MoodPerDay> addMoodPerDayWithId(MoodPerDay moodPerDay) async {
-  final database = await getDb();
-  final id = await database.insert("MoodPerDay", {
-    'date': moodPerDay.date.toIso8601String(),
-  });
-  return MoodPerDay(id: id, date: moodPerDay.date); // id is assigned once
-}
+    final database = await getDb();
+    final id = await database.insert("MoodPerDay", {
+      'date': moodPerDay.date.toIso8601String(),
+    });
+    return MoodPerDay(id: id, date: moodPerDay.date); // id is assigned once
+  }
 
   static Future<List<MoodPerDay>> getMoodPerDayWithMoods() async {
     final database = await getDb();
