@@ -16,6 +16,56 @@ class CalendarView extends StatefulWidget {
 class _CalendarViewState extends State<CalendarView> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
+
+  Widget _cellBuilder(DateTime day, {isSelected = false, isToday = false}){
+    MoodPerDay? moodDay;
+    try {
+      moodDay = widget.moodPerDays.firstWhere((d) =>
+          d.date.year == day.year &&
+          d.date.month == day.month &&
+          d.date.day == day.day);
+      } catch (_) {
+        moodDay = null;
+      }
+    final avgMood = moodDay?.getAvgMoodScale();
+    BoxDecoration? decoration;
+    if(isSelected){
+      decoration = BoxDecoration(
+        color: Color.fromRGBO(167, 139, 250, 1),
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(5),
+      );
+    }
+    else if(isToday){
+      decoration = BoxDecoration(
+        color: Color.fromRGBO(250, 208, 137, 1),
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(10),
+      );
+    }
+    return Container(
+      decoration: decoration,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('${day.day}', style: TextStyle(fontSize: 16)),
+            SizedBox(height: 5),
+            if (avgMood != null)
+              SvgPicture.asset(
+                avgMood.icon,
+                colorFilter: ColorFilter.mode(
+                  avgMood.color, 
+                  BlendMode.srcIn),
+                width: 20,
+                height: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+
+  }
  
   @override
   Widget build(BuildContext context) {
@@ -49,50 +99,16 @@ class _CalendarViewState extends State<CalendarView> {
 
           Navigator.push(context, MaterialPageRoute(builder: (context) => MoodPerDayPage(moodPerDay: day)));
         },
-
-        calendarStyle: CalendarStyle(
-          selectedDecoration: BoxDecoration(
-            color: Color.fromRGBO(167, 139, 250, 1),
-            shape: BoxShape.rectangle,
-            borderRadius: BorderRadius.circular(5),
-          ),
-          todayDecoration: BoxDecoration(
-            color: Color.fromRGBO(250, 208, 137, 1),
-            shape: BoxShape.rectangle,
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
         calendarBuilders: CalendarBuilders(
           defaultBuilder: (context, day, _){
-            MoodPerDay? moodDay;
-            try {
-              moodDay = widget.moodPerDays.firstWhere((d) =>
-                  d.date.year == day.year &&
-                  d.date.month == day.month &&
-                  d.date.day == day.day);
-            } catch (_) {
-              moodDay = null;
-            }
-          final avgMood = moodDay?.getAvgMoodScale();
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('${day.day}', style: TextStyle(fontSize: 16)),
-                SizedBox(height: 5),
-                if (avgMood != null)
-                  SvgPicture.asset(
-                    avgMood.icon,
-                    colorFilter: ColorFilter.mode(
-                      avgMood.color, 
-                      BlendMode.srcIn),
-                    width: 20,
-                    height: 20,
-                  ),
-              ],
-            ),
-            );
-          } ,
+            return _cellBuilder(day);
+          },
+          selectedBuilder: (context, day, _){
+            return _cellBuilder(day, isSelected: true);
+          },
+          todayBuilder: (context, day, _){
+            return _cellBuilder(day, isToday: true);
+          },
         ),
       ),
     ),

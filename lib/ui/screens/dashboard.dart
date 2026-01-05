@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mood_jar_app/data/repository/user_shared_preference.dart';
 import 'package:mood_jar_app/ui/components/empty_mood.dart';
 import 'package:mood_jar_app/ui/components/monthly_stats.dart';
 import 'package:mood_jar_app/ui/components/mood_jar.dart';
 import '../../domain/entities/mood_entry.dart';
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends StatefulWidget {
   final VoidCallback onGoToAddMood;
   final List<MoodEntry> todayMoods;
   final List<MoodEntry> thisMonthMoods;
@@ -15,6 +16,20 @@ class Dashboard extends StatelessWidget {
     required this.onGoToAddMood, 
     required this.thisMonthMoods
   });
+
+  @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  String? username;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName(); 
+  }
+ 
 
   String _getTimeBasedGreeting () {
     final hour = DateTime.now().hour;
@@ -51,6 +66,61 @@ class Dashboard extends StatelessWidget {
     return '$dayOfWeek, $day $month $year';
   }
 
+  Future<void> _loadUserName() async {
+    final name = await UserSharedPreference.getUserName();
+    if(name != null){
+      setState(() {
+        username = name;
+      });
+    }
+  }
+
+  String? validateName(String? value){
+    if (value == null || value.isEmpty) {
+      return "Name cannot be empty";
+    }
+    return null;
+  }
+  void _showEditNameModal() async{
+    TextEditingController nameController = TextEditingController();
+    final formKey = GlobalKey<FormState>(); 
+
+    return showModalBottomSheet(context: context, builder: (context){
+      return Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: formKey,
+          child: Column(
+            children: [
+              Text("Enter new name", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              TextFormField(
+                  controller: nameController,
+                  validator: validateName,
+                  autofocus: true,
+                  maxLength: 10,
+                  decoration: InputDecoration(
+                    hintText: "Enter new name"
+                  ),
+                ),
+                SizedBox(height: 15),
+                ElevatedButton(onPressed: () async {
+                  if(formKey.currentState!.validate()){
+                    await UserSharedPreference.saveUserName(nameController.text);
+
+                    final updatedName = await UserSharedPreference.getUserName();
+                    setState(() {
+                      username = updatedName;
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text("Update")),
+            ],
+          ),
+        ),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,13 +129,26 @@ class Dashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${_getTimeBasedGreeting()}, Jennie',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${_getTimeBasedGreeting()}, $username',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              
+              IconButton(
+                onPressed: _showEditNameModal, 
+                icon: 
+                  Icon(Icons.edit),
+                  color: Colors.grey,
+                  iconSize: 15,
+              )
+            ],
           ),
           Text(
             _getFormattedDate(),
@@ -81,8 +164,8 @@ class Dashboard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  todayMoods.isEmpty
-                    ? Center( child: EmptyTodayMoods(onGoToAddMood: onGoToAddMood))
+                  widget.todayMoods.isEmpty
+                    ? Center( child: EmptyTodayMoods(onGoToAddMood: widget.onGoToAddMood))
                     : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -95,13 +178,13 @@ class Dashboard extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         Center(
-                          child: MoodJar(todayMoods: todayMoods, onGoToAddMood: onGoToAddMood,),
+                          child: MoodJar(todayMoods: widget.todayMoods, onGoToAddMood: widget.onGoToAddMood,),
                         )
                       ],
                     ),
                   
                   const SizedBox(height: 40),
-                  MonthlyStats(thisMonthMoods: thisMonthMoods),
+                  MonthlyStats(thisMonthMoods: widget.thisMonthMoods),
                 ],
               ),
             ),

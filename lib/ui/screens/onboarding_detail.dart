@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mood_jar_app/data/repository/user_shared_preference.dart';
 import 'package:mood_jar_app/ui/components/button.dart';
 import 'package:mood_jar_app/ui/screens/mood_jar.dart';
 
@@ -25,7 +26,12 @@ class _OnboardingDetailState extends State<OnboardingDetail> {
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingCompletetion()));
               },
-              child: Text("Skip", style: TextStyle(fontSize: 18)))
+              child: GestureDetector(
+                onTap: () async {
+                  await UserSharedPreference.saveUserName("Guest");
+                },
+                child: Text("Skip", style: TextStyle(fontSize: 18)))
+              )
             ),
             Image(image: AssetImage("assets/icons/hello copy.png"), width: 170, height: 170,),
             SizedBox(height: 20,),
@@ -48,6 +54,9 @@ class _OnboardingDetailState extends State<OnboardingDetail> {
                   )
                 ),
                 onSubmitted: (value) async {
+                  if(value.trim().isNotEmpty){
+                    await UserSharedPreference.saveUserName(value);
+                  }
                   Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingCompletetion()));
                 },
               ),
