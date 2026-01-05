@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mood_jar_app/domain/service/database_helper.dart';
+import 'package:mood_jar_app/domain/entities/mood_per_day.dart';
 import 'package:mood_jar_app/ui/screens/add_mood.dart';
 import 'package:mood_jar_app/ui/screens/dashboard.dart';
 import '../../domain/entities/mood_entry.dart';
 import './calendar_view.dart';
+import '../../domain/services/mood_service.dart';
 
 class MoodJar extends StatefulWidget {
   const MoodJar({super.key});
@@ -15,8 +16,12 @@ class MoodJar extends StatefulWidget {
 enum BottomTab { dashboard, addMood, calendar }
 
 class _MoodJarState extends State<MoodJar> {
-  late List<MoodEntry> _todayMoods = [];
-  late List<MoodEntry> _thisMonthMoods = [];
+  final MoodService _moodService = MoodService();
+
+  List<MoodEntry> _todayMoods = [];
+  List<MoodEntry> _thisMonthMoods = [];
+  List<MoodPerDay> _moodPerDays = [];
+
   BottomTab currentTab = BottomTab.dashboard;
 
   @override
@@ -26,37 +31,38 @@ class _MoodJarState extends State<MoodJar> {
   }
 
   Future<void> _loadMoods() async {
-
-    final todayMoods = await DatabaseHelper.getTodayMoods();
-    final monthMoods = await DatabaseHelper.getThisMonthMoods();
+    final todayMoods = await _moodService.getTodayMoods();
+    final monthMoods = await _moodService.getThisMonthMoods();
+    final moodPerDays = await _moodService.getMoodPerDayWithMoods();
 
     setState(() {
       _todayMoods = todayMoods;
       _thisMonthMoods = monthMoods;
+      _moodPerDays = moodPerDays;
     });
   }
 
   Future<void> onAddMood(MoodEntry newMood) async {
-    final newId = await DatabaseHelper.addMood(newMood); 
+    try {
+      final newMoodWithId = await _moodService.addMood(newMood);
+      final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
 
-    final moodWithId = newMood.copyWith(id: newId);
-
-    setState(() {
-      _todayMoods.add(moodWithId);
-      _thisMonthMoods.add(moodWithId);
-    });
-  }
-
-  void onGoToAddMood() {
-    setState(() {
-      currentTab = BottomTab.addMood;
-    });
+      setState(() {
+        _todayMoods.add(newMoodWithId);
+        _thisMonthMoods.add(newMoodWithId);
+        _moodPerDays = updatedMoodPerDays;
+      });
+    } catch (e) {
+      print("Failed to add mood: $e");
+    }
   }
 
   void onEditMood(MoodEntry updatedMood) async {
     if (updatedMood.id == null) return;
 
-    await DatabaseHelper.updateMood(updatedMood);
+    await _moodService.updateMood(updatedMood);
+    final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
+    _moodPerDays = updatedMoodPerDays;
 
     setState(() {
       _todayMoods = _todayMoods
@@ -71,11 +77,19 @@ class _MoodJarState extends State<MoodJar> {
   void onRemoveMood(MoodEntry mood) async {
     if (mood.id == null) return;
 
-    await DatabaseHelper.deleteMood(mood);
+    await _moodService.removeMood(mood.id!);
+    final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
 
     setState(() {
       _todayMoods.removeWhere((m) => m.id == mood.id);
       _thisMonthMoods.removeWhere((m) => m.id == mood.id);
+      _moodPerDays = updatedMoodPerDays;
+    });
+  }
+
+  void onGoToAddMood() {
+    setState(() {
+      currentTab = BottomTab.addMood;
     });
   }
 
@@ -91,7 +105,7 @@ class _MoodJarState extends State<MoodJar> {
               Dashboard(
                 todayMoods: _todayMoods,
                 onGoToAddMood: onGoToAddMood,
-                thisMonthMoods: _thisMonthMoods
+                thisMonthMoods: _thisMonthMoods,
               ),
               AddMood(
                 todayMoods: _todayMoods,
@@ -100,7 +114,7 @@ class _MoodJarState extends State<MoodJar> {
                 onAddMood: onAddMood,
                 onGoToAddMood: onGoToAddMood,
               ),
-              CalendarView(),
+              CalendarView(moodPerDays: _moodPerDays,),
             ],
           ),
           bottomNavigationBar: BottomAppBar(

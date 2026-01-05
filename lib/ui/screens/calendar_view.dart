@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:mood_jar_app/domain/entities/mood_entry.dart';
 import 'package:mood_jar_app/domain/entities/mood_per_day.dart';
-import 'package:mood_jar_app/domain/enums/mood_type.dart';
-import 'package:mood_jar_app/domain/service/database_helper.dart';
 import 'package:mood_jar_app/ui/screens/mood_per_day.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 
 class CalendarView extends StatefulWidget {
-  const CalendarView({super.key});
+  final List<MoodPerDay> moodPerDays;
+  const CalendarView({super.key, required this.moodPerDays});
 
   @override
   State<CalendarView> createState() => _CalendarViewState();
@@ -18,39 +16,19 @@ class CalendarView extends StatefulWidget {
 class _CalendarViewState extends State<CalendarView> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
-  List<MoodPerDay> moodPerDays = [];
-
-  @override
-  void initState() {
-    super.initState();
-    loadMoodPerDays();
-  }
-
-
-  Future<void> loadMoodPerDays() async {
-    print('loadMoodPerDays() called');
-    try {
-      final fetched = await DatabaseHelper.getMoodPerDayWithMoods();
-      print('DB fetch complete: ${fetched.length} items');
-      for (var day in fetched) {
-        print('Date: ${day.date}, moods: ${day.moods.length}');
-      }
-      setState(() {
-        moodPerDays = fetched;
-      });
-    } catch (e, s) {
-      print('Error fetching moods: $e');
-      print(s);
-    }
-  }
-
-
-
+ 
   @override
   Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: Text("Montly Overview"),
+      title: Text(
+          "Monthly Overview",
+        style: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          color: Colors.black87,
+        ),
+      ),
 
     ),
     body: Padding(
@@ -67,7 +45,7 @@ class _CalendarViewState extends State<CalendarView> {
             _selectedDay = selectedDay;
             _focusedDay = focusedDay;
           });
-          MoodPerDay? day = moodPerDays.firstWhere((d) => isSameDay(d.date, selectedDay));
+          MoodPerDay? day = widget.moodPerDays.firstWhere((d) => isSameDay(d.date, selectedDay));
 
           Navigator.push(context, MaterialPageRoute(builder: (context) => MoodPerDayPage(moodPerDay: day)));
         },
@@ -88,7 +66,7 @@ class _CalendarViewState extends State<CalendarView> {
           defaultBuilder: (context, day, _){
             MoodPerDay? moodDay;
             try {
-              moodDay = moodPerDays.firstWhere((d) =>
+              moodDay = widget.moodPerDays.firstWhere((d) =>
                   d.date.year == day.year &&
                   d.date.month == day.month &&
                   d.date.day == day.day);

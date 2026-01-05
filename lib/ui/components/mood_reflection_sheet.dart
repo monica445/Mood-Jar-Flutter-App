@@ -46,11 +46,12 @@ class _MoodReflectionSheetState extends State<MoodReflectionSheet> {
   }
 
   void onAddOtherFactor () async{
-    final factorController = TextEditingController();
+    
     final newFactor = await showModalBottomSheet<String>(
       context: context, 
       isScrollControlled: true,
       builder: (context) {
+        final factorController = TextEditingController();
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom + 20,
@@ -108,9 +109,7 @@ class _MoodReflectionSheetState extends State<MoodReflectionSheet> {
           selectedFactors.add(newFactor);
         }
       });
-    }
-    
-    factorController.dispose();
+    }    
   }
 
   void onSave() {

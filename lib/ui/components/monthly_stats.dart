@@ -13,9 +13,6 @@ class MonthlyStats extends StatelessWidget {
   Moodtype? dominantMood;
 
   void computeStats() {
-    moodCounts.clear();
-    factorCounts.clear();
-    dominantMood = null;
 
     for (var type in Moodtype.values) {
       moodCounts[type] = 0;

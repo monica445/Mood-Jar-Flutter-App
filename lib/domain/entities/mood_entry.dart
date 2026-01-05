@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:mood_jar_app/domain/entities/mood_reflection.dart';
-import 'package:mood_jar_app/domain/enums/mood_type.dart'; // Add this import
+import 'package:mood_jar_app/domain/enums/mood_type.dart'; 
 
 class MoodEntry {
   final int? id;
@@ -35,16 +35,13 @@ class MoodEntry {
   }
 
   factory MoodEntry.fromMap(Map<String, dynamic> mapData){
-    // Handle reflection from JSON string
     MoodReflection? reflection;
     if (mapData['reflection'] != null) {
       try {
-        // If reflection is stored as a JSON string
         if (mapData['reflection'] is String) {
           final reflectionMap = jsonDecode(mapData['reflection'] as String);
           reflection = MoodReflection.fromMap(Map<String, dynamic>.from(reflectionMap));
         } 
-        // If reflection is already a Map (for backward compatibility)
         else if (mapData['reflection'] is Map) {
           reflection = MoodReflection.fromMap(Map<String, dynamic>.from(mapData['reflection']));
         }

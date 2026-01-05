@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
-import 'package:mood_jar_app/domain/service/database_helper.dart';
 import 'package:mood_jar_app/ui/components/empty_mood.dart';
 import 'package:mood_jar_app/ui/components/monthly_stats.dart';
 import 'package:mood_jar_app/ui/components/mood_jar.dart';
-import 'package:sqflite/sqlite_api.dart';
 import '../../domain/entities/mood_entry.dart';
 
 class Dashboard extends StatelessWidget {
@@ -62,13 +59,13 @@ class Dashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-                'Good Morning, Jennie',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
+          Text(
+            '${_getTimeBasedGreeting()}, Jennie',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
           ),
           Text(
             _getFormattedDate(),
@@ -85,7 +82,7 @@ class Dashboard extends StatelessWidget {
                 children: [
                   const SizedBox(height: 20),
                   todayMoods.isEmpty
-                    ? EmptyTodayMoods(onGoToAddMood: onGoToAddMood)
+                    ? Center( child: EmptyTodayMoods(onGoToAddMood: onGoToAddMood))
                     : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
