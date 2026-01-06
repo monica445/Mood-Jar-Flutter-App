@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mood_jar_app/data/repository/user_shared_preference.dart';
-import 'package:mood_jar_app/ui/screens/mood_jar.dart';
+import 'package:mood_jar_app/ui/screens/app.dart';
 import 'package:mood_jar_app/ui/screens/onboarding.dart';
 import 'package:mood_jar_app/ui/animation/animation_util.dart';
 

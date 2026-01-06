@@ -5,8 +5,9 @@ import 'package:mood_jar_app/domain/entities/mood_entry.dart';
 
 class MoodExpandableCard extends StatefulWidget {
   final MoodEntry mood;
+  final VoidCallback? onEditTap;
 
-  const MoodExpandableCard({super.key, required this.mood});
+  const MoodExpandableCard({super.key, required this.mood, this.onEditTap});
 
   @override
   State<MoodExpandableCard> createState() => _MoodEntryTileState();
@@ -47,29 +48,44 @@ class _MoodEntryTileState extends State<MoodExpandableCard> {
             ),
             title: Text(
               widget.mood.type.label,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               DateFormat('h:mm a').format(widget.mood.timestamp),
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF7A7A7A)),
             ),
-            trailing: reflection == null
-                ? null
-                : IconButton(
-                    icon: Icon(
-                      _showReflection
-                          ? Icons.expand_less
-                          : Icons.expand_more,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.onEditTap != null)
+                  IconButton(
+                    icon: const Icon(
+                      Icons.edit,
+                      color: Color(0xFFFAD089),
                     ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: widget.onEditTap,
+                    tooltip: "Edit",
+                  ),
+
+                if (reflection != null)
+                  IconButton(
+                    icon: Icon(
+                      _showReflection ? Icons.expand_less : Icons.expand_more,
+                    ),
+                    iconSize: 30,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                     onPressed: () {
                       setState(() {
                         _showReflection = !_showReflection;
                       });
                     },
                   ),
+              ],
+            ),
+
           ),
 
           if (_showReflection && reflection != null)

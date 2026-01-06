@@ -22,28 +22,22 @@ class Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final button =  ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        elevation: 0,
-        padding: EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 14
-        ),
-        backgroundColor: backgroundColor,
-        foregroundColor: textColor
-      ), 
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      )
-    );
-
     return SizedBox(
       width: width?.toDouble(),
       height: height?.toDouble(),
-      child: button,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+            elevation: 0,
+            padding: EdgeInsets.symmetric( horizontal: 24, vertical: 14),
+            backgroundColor: backgroundColor,
+            foregroundColor: textColor
+        ),
+        child: Text(
+          text,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      )
     );
-    
   }
 }

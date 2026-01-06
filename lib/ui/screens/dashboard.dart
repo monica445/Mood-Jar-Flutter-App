@@ -29,7 +29,6 @@ class _DashboardState extends State<Dashboard> {
     super.initState();
     _loadUserName(); 
   }
- 
 
   String _getTimeBasedGreeting () {
     final hour = DateTime.now().hour;
@@ -81,6 +80,7 @@ class _DashboardState extends State<Dashboard> {
     }
     return null;
   }
+
   void _showEditNameModal() async{
     TextEditingController nameController = TextEditingController();
     final formKey = GlobalKey<FormState>(); 
@@ -97,7 +97,7 @@ class _DashboardState extends State<Dashboard> {
                   controller: nameController,
                   validator: validateName,
                   autofocus: true,
-                  maxLength: 10,
+                  maxLength: 50,
                   decoration: InputDecoration(
                     hintText: "Enter new name"
                   ),
@@ -132,21 +132,25 @@ class _DashboardState extends State<Dashboard> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${_getTimeBasedGreeting()}, $username',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+              Expanded(
+                child: Text(
+                  '${_getTimeBasedGreeting()}, $username',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
-              
               IconButton(
                 onPressed: _showEditNameModal, 
                 icon: 
                   Icon(Icons.edit),
                   color: Colors.grey,
-                  iconSize: 15,
+                  iconSize: 24,
+                tooltip: "Edit Name",
               )
             ],
           ),
@@ -170,7 +174,7 @@ class _DashboardState extends State<Dashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Your Feelings Today',
+                          'Your Moods Today',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,

@@ -58,33 +58,41 @@ class _MoodJarState extends State<MoodJar> {
   }
 
   void onEditMood(MoodEntry updatedMood) async {
-    if (updatedMood.id == null) return;
+    try {
+      await _moodService.updateMood(updatedMood);
+      final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
 
-    await _moodService.updateMood(updatedMood);
-    final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
-    _moodPerDays = updatedMoodPerDays;
-
-    setState(() {
-      _todayMoods = _todayMoods
-          .map((m) => m.id == updatedMood.id ? updatedMood : m)
-          .toList();
-      _thisMonthMoods = _thisMonthMoods
-          .map((m) => m.id == updatedMood.id ? updatedMood : m)
-          .toList();
-    });
+      setState(() {
+        _moodPerDays = updatedMoodPerDays;
+        _todayMoods = _todayMoods
+            .map((m) => m.id == updatedMood.id ? updatedMood : m)
+            .toList();
+        _thisMonthMoods = _thisMonthMoods
+            .map((m) => m.id == updatedMood.id ? updatedMood : m)
+            .toList();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
   }
 
   void onRemoveMood(MoodEntry mood) async {
-    if (mood.id == null) return;
+    try {
+      await _moodService.deleteMood(mood);
+      final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
 
-    await _moodService.removeMood(mood.id!);
-    final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
-
-    setState(() {
-      _todayMoods.removeWhere((m) => m.id == mood.id);
-      _thisMonthMoods.removeWhere((m) => m.id == mood.id);
-      _moodPerDays = updatedMoodPerDays;
-    });
+      setState(() {
+        _todayMoods.removeWhere((m) => m.id == mood.id);
+        _thisMonthMoods.removeWhere((m) => m.id == mood.id);
+        _moodPerDays = updatedMoodPerDays;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
   }
 
   void onGoToAddMood() {
@@ -93,14 +101,11 @@ class _MoodJarState extends State<MoodJar> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SafeArea(
+    return SafeArea(
         child: Scaffold(
+          backgroundColor: Color(0xFFF9FAFC),
           body: IndexedStack(
             index: currentTab.index,
             children: [
@@ -171,7 +176,6 @@ class _MoodJarState extends State<MoodJar> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

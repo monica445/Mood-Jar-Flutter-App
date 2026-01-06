@@ -52,16 +52,43 @@ class MonthlyStats extends StatelessWidget {
       return "Log your moods to start discovering patterns over time 🌱";
     }
 
+    final totalMoods = thisMonthMoods.length;
+    final dominantCount = moodCounts[dominantMood] ?? 0;
+    final percent = ((dominantCount / totalMoods) * 100).round();
+
+    // Advice based on mood type
+    String advice;
+    switch (dominantMood!) {
+      case Moodtype.awful:
+        advice = "It’s been rough. Notice what triggers this mood and try small steps to improve.";
+        break;
+      case Moodtype.bad:
+        advice = "Things weren’t great. Reflect on what made you feel this way and what helped you cope.";
+        break;
+      case Moodtype.neutral:
+        advice = "A calm month! Try adding things that bring you joy or excitement.";
+        break;
+      case Moodtype.good:
+        advice = "Nice work! Keep doing what makes you feel good.";
+        break;
+      case Moodtype.great:
+        advice = "Amazing month! Celebrate the moments that made you feel great.";
+        break;
+    }
+
     if (factorCounts.isEmpty) {
-      return "This month, you felt mostly ${dominantMood!.label}";
+      return "This month, you felt mostly ${dominantMood!.label} ($percent% of the time). $advice";
     }
 
     final topFactor = factorCounts.entries
         .reduce((a, b) => a.value >= b.value ? a : b)
         .key;
+    final factorCount = factorCounts[topFactor]!;
+    final factorPercent = ((factorCount / dominantCount) * 100).round();
 
-    return "This month, you felt mostly ${dominantMood!.label}. It often appeared alongside $topFactor.";
+    return "This month, you felt mostly ${dominantMood!.label} ($percent% of the time). It often appeared alongside '$topFactor' ($factorPercent% of the time). $advice";
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -118,15 +145,19 @@ class MonthlyStats extends StatelessWidget {
                 ),
               )
             : Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.grey[300]!,
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
+                      color: Colors.grey.withOpacity(0.15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -134,8 +165,7 @@ class MonthlyStats extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: moodTypes.map((type) {
                     final count = moodCounts[type] ?? 0;
-                    final barHeight =
-                        maxCount == 0 ? 0.0 : (count.toDouble() / maxCount) * 160;
+                    final barHeight = maxCount == 0 ? 0.0 : (count.toDouble() / maxCount) * 160;
 
                     return Expanded(
                       child: Padding(
@@ -213,17 +243,16 @@ class MonthlyStats extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.lightbulb_outline_rounded,
-                    size: 20,
+                    size: 24,
                     color: Colors.orangeAccent,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     "Monthly Insight",
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
-                      letterSpacing: 0.3,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
                     ),
                   ),
                 ],

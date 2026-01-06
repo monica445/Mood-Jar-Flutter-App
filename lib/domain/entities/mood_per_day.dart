@@ -17,29 +17,6 @@ class MoodPerDay {
     );
   }
 
-  void addMood(MoodEntry mood) {
-    moods.add(mood);
-  }
-
-  void removeMood(MoodEntry mood) {
-    moods.removeWhere((m) => m.id == mood.id);
-  }
-
-  void updateMood(MoodEntry updatedMood) {
-    if (updatedMood.id == null) return;
-
-    for (int i = 0; i < moods.length; i++) {
-      if (moods[i].id == updatedMood.id) {
-        moods[i] = updatedMood;
-        break;
-      }
-    }
-  }
-
-  List<MoodEntry> getAllMoodPerDay() {
-    return moods;
-  }
-
   Moodtype? getAvgMoodScale() {
     int totalMoodWeight = 0;
     double avgMoodWeight = 0;

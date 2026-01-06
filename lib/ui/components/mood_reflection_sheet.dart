@@ -24,15 +24,10 @@ class _MoodReflectionSheetState extends State<MoodReflectionSheet> {
   @override
   void initState() {
     super.initState();
-
     final reflection = widget.mood?.reflection;
-
     selectedFactors = reflection?.factors?.toList() ?? [];
-
     noteController.text = reflection?.note ?? '';
-
   }
-
 
   @override
   void dispose() {
@@ -99,7 +94,6 @@ class _MoodReflectionSheetState extends State<MoodReflectionSheet> {
                   ),
                 ],
               )
-              
             ],
           ),
         );

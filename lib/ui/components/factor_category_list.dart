@@ -7,6 +7,7 @@ class FactorCategoryList extends StatelessWidget {
   final List<String> factors;
   final List<String> selectedFactors;
   final Function(String factor) onFactorToggle;
+
   const FactorCategoryList({
     super.key, 
     required this.title, 

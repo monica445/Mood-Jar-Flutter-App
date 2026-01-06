@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:mood_jar_app/ui/components/mood_expandable_card.dart';
 import '../../domain/entities/mood_entry.dart';
 import 'package:mood_jar_app/domain/entities/mood_reflection.dart';
 import 'package:mood_jar_app/ui/components/mood_buttons_list.dart';
-import 'package:mood_jar_app/ui/components/mood_card.dart';
 import 'package:mood_jar_app/ui/components/mood_jar.dart';
 import '../../domain/enums/mood_type.dart';
 import 'package:mood_jar_app/ui/components/mood_reflection_sheet.dart';
 
 class AddMood extends StatelessWidget {
+  final VoidCallback onGoToAddMood;
   final List<MoodEntry> todayMoods;
   final Future<void> Function(MoodEntry mood) onAddMood;
-  final VoidCallback onGoToAddMood;
   final void Function(MoodEntry mood) onRemoveMood;
   final void Function(MoodEntry updatedMood) onEditMood;
 
@@ -100,20 +100,23 @@ class AddMood extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Add Mood",
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 20),
 
-          MoodJar(
-            todayMoods: todayMoods,
-            onGoToAddMood: onGoToAddMood,
+          Center(
+            child: MoodJar(
+              todayMoods: todayMoods,
+              onGoToAddMood: onGoToAddMood,
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -145,8 +148,7 @@ class AddMood extends StatelessWidget {
                         direction: DismissDirection.endToStart,
                         background: Container(
                           alignment: Alignment.centerRight,
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE85D75),
                             borderRadius: BorderRadius.circular(12),
@@ -158,10 +160,13 @@ class AddMood extends StatelessWidget {
                           ),
                         ),
                         onDismissed: (_) => _removeMood(context, mood),
-                        child: MoodCard(
-                          mood: mood,
-                          onEditTap: () => _editMood(context, mood),
-                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: MoodExpandableCard(
+                            mood: mood,
+                            onEditTap: () => _editMood(context, mood),
+                          ),
+                        )
                       );
                     },
                   ),

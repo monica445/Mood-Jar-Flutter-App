@@ -31,16 +31,22 @@ class _CalendarViewState extends State<CalendarView> {
     BoxDecoration? decoration;
     if(isSelected){
       decoration = BoxDecoration(
-        color: Color.fromRGBO(167, 139, 250, 1),
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(5),
+        color: Color(0xFFA78BFA).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Color(0xFFA78BFA).withOpacity(0.5),
+          width: 1.5,
+        ),
       );
     }
     else if(isToday){
       decoration = BoxDecoration(
-        color: Color.fromRGBO(250, 208, 137, 1),
-        shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(10),
+        color: Color(0xFFfad089).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Color(0xFFfad089).withOpacity(0.5),
+          width: 1.5,
+        ),
       );
     }
     return Container(
@@ -69,50 +75,51 @@ class _CalendarViewState extends State<CalendarView> {
  
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text(
-          "Monthly Overview",
-        style: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
-          color: Colors.black87,
-        ),
-      ),
+  return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Monthly Overview",
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 20),
+          TableCalendar(
+            daysOfWeekHeight: 40,
+            rowHeight: 70,
+            focusedDay: _focusedDay,
+            firstDay: DateTime.utc(2025, 1, 1),
+            lastDay: DateTime.utc(2027, 12, 31),
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
+              MoodPerDay? day = widget.moodPerDays.firstWhere((d) => isSameDay(d.date, selectedDay));
 
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: TableCalendar(
-        daysOfWeekHeight: 40,
-        rowHeight: 70,
-        focusedDay: _focusedDay,
-        firstDay: DateTime.utc(2025, 1, 1),
-        lastDay: DateTime.utc(2027, 12, 31),
-        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-        onDaySelected: (selectedDay, focusedDay) {
-          setState(() {
-            _selectedDay = selectedDay;
-            _focusedDay = focusedDay;
-          });
-          MoodPerDay? day = widget.moodPerDays.firstWhere((d) => isSameDay(d.date, selectedDay));
-
-          Navigator.push(context, MaterialPageRoute(builder: (context) => MoodPerDayPage(moodPerDay: day)));
-        },
-        calendarBuilders: CalendarBuilders(
-          defaultBuilder: (context, day, _){
-            return _cellBuilder(day);
-          },
-          selectedBuilder: (context, day, _){
-            return _cellBuilder(day, isSelected: true);
-          },
-          todayBuilder: (context, day, _){
-            return _cellBuilder(day, isToday: true);
-          },
-        ),
-      ),
-    ),
-  );
-}
+              Navigator.push(context, MaterialPageRoute(builder: (context) => MoodPerDayPage(moodPerDay: day)));
+            },
+            calendarBuilders: CalendarBuilders(
+              defaultBuilder: (context, day, _){
+                return _cellBuilder(day);
+              },
+              selectedBuilder: (context, day, _){
+                return _cellBuilder(day, isSelected: true);
+              },
+              todayBuilder: (context, day, _){
+                return _cellBuilder(day, isToday: true);
+              },
+            ),
+          ),
+        ],
+      )
+    );
+  }
 }
 
