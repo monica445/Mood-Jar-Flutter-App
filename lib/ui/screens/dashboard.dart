@@ -97,7 +97,7 @@ class _DashboardState extends State<Dashboard> {
                   controller: nameController,
                   validator: validateName,
                   autofocus: true,
-                  maxLength: 10,
+                  maxLength: 9,
                   decoration: InputDecoration(
                     hintText: "Enter new name"
                   ),
@@ -135,7 +135,7 @@ class _DashboardState extends State<Dashboard> {
               Text(
                 '${_getTimeBasedGreeting()}, $username',
                 style: TextStyle(
-                  fontSize: 26,
+                  fontSize: 25,
                   fontWeight: FontWeight.w700,
                   color: Colors.black87,
                 ),

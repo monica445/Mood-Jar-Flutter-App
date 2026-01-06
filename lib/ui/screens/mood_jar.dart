@@ -130,7 +130,7 @@ class _MoodJarState extends State<MoodJar> {
 
                   IconData icon;
 
-                  switch (tab) {
+                  switch (tab) { 
                     case BottomTab.dashboard:
                       icon = Icons.home;
                       break;
