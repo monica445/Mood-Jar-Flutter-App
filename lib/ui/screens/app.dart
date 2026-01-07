@@ -16,42 +16,52 @@ class MoodJar extends StatefulWidget {
 enum BottomTab { dashboard, addMood, calendar }
 
 class _MoodJarState extends State<MoodJar> {
-  final MoodService _moodService = MoodService();
-
-  List<MoodEntry> _todayMoods = [];
-  List<MoodEntry> _thisMonthMoods = [];
   List<MoodPerDay> _moodPerDays = [];
-
   BottomTab currentTab = BottomTab.dashboard;
+
+  final MoodService _moodService = MoodService();
 
   @override
   void initState() {
     super.initState();
-    _loadMoods();
+    _loadAllMoods();
   }
 
-  Future<void> _loadMoods() async {
-    final todayMoods = await _moodService.getTodayMoods();
-    final monthMoods = await _moodService.getThisMonthMoods();
+  Future<void> _loadAllMoods() async {
     final moodPerDays = await _moodService.getMoodPerDayWithMoods();
 
     setState(() {
-      _todayMoods = todayMoods;
-      _thisMonthMoods = monthMoods;
       _moodPerDays = moodPerDays;
     });
   }
 
+  List<MoodEntry> get todayMoods {
+    final today = DateTime.now();
+
+    return _moodPerDays
+        .where((d) =>
+            d.date.year == today.year &&
+            d.date.month == today.month &&
+            d.date.day == today.day)
+        .expand<MoodEntry>((d) => d.moods)
+        .toList();
+  }
+
+  List<MoodEntry> get thisMonthMoods {
+    final now = DateTime.now();
+
+    return _moodPerDays
+        .where((d) =>
+            d.date.year == now.year &&
+            d.date.month == now.month)
+        .expand<MoodEntry>((d) => d.moods)
+        .toList();
+  }  
+
   Future<void> onAddMood(MoodEntry newMood) async {
     try {
-      final newMoodWithId = await _moodService.addMood(newMood);
-      final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
-
-      setState(() {
-        _todayMoods.add(newMoodWithId);
-        _thisMonthMoods.add(newMoodWithId);
-        _moodPerDays = updatedMoodPerDays;
-      });
+      await _moodService.addMood(newMood);
+      await _loadAllMoods();
     } catch (e) {
       print("Failed to add mood: $e");
     }
@@ -60,17 +70,7 @@ class _MoodJarState extends State<MoodJar> {
   void onEditMood(MoodEntry updatedMood) async {
     try {
       await _moodService.updateMood(updatedMood);
-      final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
-
-      setState(() {
-        _moodPerDays = updatedMoodPerDays;
-        _todayMoods = _todayMoods
-            .map((m) => m.id == updatedMood.id ? updatedMood : m)
-            .toList();
-        _thisMonthMoods = _thisMonthMoods
-            .map((m) => m.id == updatedMood.id ? updatedMood : m)
-            .toList();
-      });
+      await _loadAllMoods();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
@@ -81,13 +81,7 @@ class _MoodJarState extends State<MoodJar> {
   void onRemoveMood(MoodEntry mood) async {
     try {
       await _moodService.deleteMood(mood);
-      final updatedMoodPerDays = await _moodService.getMoodPerDayWithMoods();
-
-      setState(() {
-        _todayMoods.removeWhere((m) => m.id == mood.id);
-        _thisMonthMoods.removeWhere((m) => m.id == mood.id);
-        _moodPerDays = updatedMoodPerDays;
-      });
+      await _loadAllMoods();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
@@ -110,12 +104,12 @@ class _MoodJarState extends State<MoodJar> {
             index: currentTab.index,
             children: [
               Dashboard(
-                todayMoods: _todayMoods,
+                todayMoods: todayMoods,
                 onGoToAddMood: onGoToAddMood,
-                thisMonthMoods: _thisMonthMoods,
+                thisMonthMoods: thisMonthMoods,
               ),
               AddMood(
-                todayMoods: _todayMoods,
+                todayMoods: todayMoods,
                 onEditMood: onEditMood,
                 onRemoveMood: onRemoveMood,
                 onAddMood: onAddMood,
